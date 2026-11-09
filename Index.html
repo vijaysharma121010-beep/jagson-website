@@ -1,0 +1,472 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Jagson</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky bar, split hero (headline left, live stock panel right), toolbar, card/table catalogue, about + contact band, quote list. */
+:root{
+  --bg:#F2F5F8; --surface:#FFFFFF; --ink:#12202E; --muted:#556473; --line:#D8DFE6;
+  --accent:#C84300; --accent-ink:#FFFFFF; --tint:#E9EEF3;
+  --ok:#17744A; --warn:#9A5B00; --bad:#B3261E;
+  --f-display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1721; --surface:#15202C; --ink:#E7ECF1; --muted:#93A1B0; --line:#25343F; --tint:#1B2937;
+  --accent:#FF7A3D; --accent-ink:#1B0D04; --ok:#4CC38A; --warn:#F0A646; --bad:#FF7B72; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1721; --surface:#15202C; --ink:#E7ECF1; --muted:#93A1B0; --line:#25343F; --tint:#1B2937;
+  --accent:#FF7A3D; --accent-ink:#1B0D04; --ok:#4CC38A; --warn:#F0A646; --bad:#FF7B72; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.05}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:20px;padding-block:12px;flex-wrap:wrap}
+.logo{font-family:var(--f-display);font-stretch:125%;font-weight:900;font-size:22px;letter-spacing:.02em;text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo i{width:14px;height:14px;background:var(--accent);display:inline-block;clip-path:polygon(0 0,100% 0,100% 60%,60% 100%,0 100%)}
+nav{display:flex;gap:18px;margin-left:auto;align-items:center;flex-wrap:wrap}
+nav a{text-decoration:none;font-size:15px;font-weight:500;color:var(--muted)}
+nav a:hover{color:var(--ink)}
+.qbtn{background:var(--ink);color:var(--bg);padding:7px 14px;border-radius:4px;font-weight:600;display:inline-flex;gap:8px;align-items:center}
+nav a.qbtn:hover{color:var(--bg)}
+.qbtn b{background:var(--accent);color:var(--accent-ink);border-radius:99px;min-width:22px;text-align:center;font-size:13px;padding:0 6px;font-family:var(--f-mono)}
+
+/* hero */
+.hero{padding-block:48px 40px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:40px;align-items:end}
+.hero h1{font-stretch:125%;font-weight:850;font-size:clamp(34px,5.6vw,68px);letter-spacing:-.01em}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{max-width:52ch;color:var(--muted);font-size:18px;margin:20px 0 26px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:600;font-size:15px;border:2px solid var(--ink);background:transparent;color:var(--ink);padding:10px 18px;border-radius:4px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{background:var(--tint)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.shelf{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--accent);padding:20px}
+.shelf h2{font-size:15px;font-family:var(--f-mono);font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;justify-content:space-between;gap:8px}
+.shelf .big{font-family:var(--f-display);font-stretch:125%;font-weight:850;font-size:46px;line-height:1;font-variant-numeric:tabular-nums}
+.shelf .big small{font-family:var(--f-body);font-stretch:100%;font-weight:500;font-size:14px;color:var(--muted);margin-left:8px}
+.shelf dl{margin:16px 0 0;display:grid;gap:10px}
+.shelf dl div{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px;padding-top:10px;border-top:1px solid var(--line)}
+.shelf dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.meter{grid-column:1/-1;height:6px;background:var(--tint);border-radius:3px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--ink)}
+
+/* trust strip */
+.strip{border-block:1px solid var(--line);background:var(--surface)}
+.strip ul{list-style:none;margin:0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 32px;font-size:14px;color:var(--muted)}
+.strip li::before{content:"";display:inline-block;width:8px;height:8px;background:var(--accent);margin-right:10px}
+
+/* catalogue */
+section{padding-block:56px}
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.sec-head h2{font-size:clamp(28px,3.6vw,42px);font-stretch:118%;font-weight:800}
+.tools{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+.seg{display:inline-flex;border:2px solid var(--ink);border-radius:4px;overflow:hidden}
+.seg button{font:inherit;font-size:14px;font-weight:600;background:transparent;color:var(--ink);border:0;padding:8px 14px;cursor:pointer}
+.seg button+button{border-left:2px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.field{font:inherit;font-size:15px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:9px 12px;min-width:0}
+input.field{flex:1 1 200px;max-width:340px}
+.chk{display:inline-flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--accent)}
+.count{font-family:var(--f-mono);font-size:13px;color:var(--muted);margin-left:auto}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
+.pic{background:var(--tint);height:132px;display:flex;align-items:center;justify-content:center;position:relative;color:var(--ink)}
+.pic svg{width:84px;height:84px}
+.tag{position:absolute;top:10px;left:10px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;background:var(--surface);padding:3px 8px;border:1px solid var(--line)}
+.cbody{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card h3{font-size:21px;font-stretch:112%;font-weight:800}
+.sku{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.desc{font-size:14.5px;color:var(--muted);margin:0}
+.specs{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:0}
+.specs li{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);padding:2px 7px}
+.price{font-family:var(--f-display);font-stretch:118%;font-weight:800;font-size:26px;font-variant-numeric:tabular-nums;margin-top:auto}
+.price small{font-family:var(--f-body);font-stretch:100%;font-weight:400;font-size:12px;color:var(--muted);margin-left:6px}
+.stock{display:grid;gap:6px}
+.stock .row{display:flex;justify-content:space-between;font-size:13px;gap:8px}
+.pill{font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.pill::before{content:"";width:9px;height:9px;border-radius:50%;background:currentColor}
+.ok{color:var(--ok)}.low{color:var(--warn)}.out{color:var(--bad)}
+.bar2{height:6px;background:var(--tint);border-radius:3px;overflow:hidden}
+.bar2 span{display:block;height:100%;background:currentColor}
+.units{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);background:var(--surface)}
+
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14.5px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;background:var(--tint);white-space:nowrap}
+td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+td b{font-family:var(--f-display);font-stretch:112%;font-weight:800}
+.add{font:inherit;font-size:14px;font-weight:600;border:2px solid var(--ink);background:transparent;color:var(--ink);padding:8px 12px;border-radius:4px;cursor:pointer;width:100%}
+.add:hover{background:var(--ink);color:var(--bg)}
+td .add{width:auto;white-space:nowrap}
+.add.in{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* about + contact */
+.band{background:var(--surface);border-block:1px solid var(--line)}
+.two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:48px}
+.about p{max-width:60ch;color:var(--muted);margin:14px 0 0}
+.about p:first-of-type{color:var(--ink);font-size:19px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:16px;margin-top:28px}
+.facts div{border-top:3px solid var(--ink);padding-top:10px}
+.facts b{display:block;font-family:var(--f-display);font-stretch:118%;font-weight:850;font-size:30px;font-variant-numeric:tabular-nums}
+.facts span{font-size:13px;color:var(--muted)}
+.contact{border:1px solid var(--line);padding:22px;background:var(--bg);display:grid;gap:18px;align-content:start}
+.contact h3{font-size:24px;font-stretch:112%;font-weight:800}
+.contact dt{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.contact dd{margin:2px 0 0;font-size:17px}
+.phone{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.phone strong{font-family:var(--f-mono);font-weight:500;font-size:20px;user-select:all}
+.mini{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--ink);background:transparent;color:var(--ink);border-radius:4px;padding:4px 10px;cursor:pointer}
+.mini:hover{background:var(--tint)}
+.note{font-size:12.5px;color:var(--muted)}
+
+/* quote */
+.qgrid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:start}
+.qlist{background:var(--surface);border:1px solid var(--line)}
+.qitem{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 16px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.qitem:last-child{border-bottom:0}
+.qitem b{font-family:var(--f-display);font-stretch:112%;font-weight:800}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line)}
+.qty button{font:inherit;width:34px;height:34px;border:0;background:transparent;color:var(--ink);cursor:pointer;font-size:18px}
+.qty button:hover{background:var(--tint)}
+.qty span{min-width:32px;text-align:center;font-family:var(--f-mono)}
+.qprice{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right;min-width:110px}
+.totals{padding:14px 16px;background:var(--tint);display:grid;gap:6px;font-family:var(--f-mono);font-size:14px;font-variant-numeric:tabular-nums}
+.totals div{display:flex;justify-content:space-between;gap:12px}
+.totals .grand{font-size:18px;font-weight:500;border-top:1px solid var(--line);padding-top:8px;margin-top:4px}
+.form{display:grid;gap:12px}
+.form label{display:grid;gap:4px;font-size:14px;font-weight:500}
+.form .field{width:100%}
+.msg{font-size:14px;padding:10px 12px;border-left:4px solid var(--accent);background:var(--tint)}
+textarea.field{min-height:120px;font-family:var(--f-mono);font-size:13px;resize:vertical}
+
+footer{padding-block:28px 36px;font-size:13px;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+@media (max-width:860px){
+  .hero .wrap,.two,.qgrid{grid-template-columns:1fr}
+  .hero .wrap{gap:28px}
+  nav{margin-left:0;width:100%;gap:14px}
+  .count{margin-left:0;width:100%}
+  .qitem{grid-template-columns:1fr auto}
+  .qprice{grid-column:1/-1;text-align:left}
+}
+@media (prefers-reduced-motion:no-preference){
+  .card{transition:transform .15s ease,border-color .15s ease}
+  .card:hover{transform:translateY(-3px);border-color:var(--ink)}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="g-serve" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="23" y="4" width="18" height="10" rx="2"/><path d="M32 14v36M14 24h36M14 36h36"/><rect x="18" y="50" width="28" height="8" rx="4"/>
+  </symbol>
+  <symbol id="g-arm" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="16" y="52" width="32" height="8" rx="2"/><path d="M32 52V40L20 26l22-12"/><circle cx="32" cy="40" r="3"/><circle cx="20" cy="26" r="3"/><circle cx="42" cy="14" r="3"/><path d="M42 14l8 4M42 14l6-6"/>
+  </symbol>
+  <symbol id="g-agv" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="6" y="38" width="52" height="12" rx="3"/><circle cx="17" cy="54" r="4"/><circle cx="47" cy="54" r="4"/><path d="M12 32h40"/><rect x="22" y="12" width="20" height="20"/><path d="M22 22h20"/>
+  </symbol>
+</svg>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="logo" href="#top"><i></i>JAGSON</a>
+    <nav aria-label="Main">
+      <a href="#catalogue">Catalogue</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <a class="qbtn" href="#quote">Quote list <b id="qcount">0</b></a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Service and industrial robots for Indian businesses</p>
+        <h1>Robots for the <em>restaurant floor</em> and the factory floor.</h1>
+        <p>Jagson has spent years working with Indian restaurants, hotels and factories. We know the kitchens, the crowded dining rooms and the budgets, and we stock robots that fit them. Check what is in stock, see the price in rupees, and build a quote in a minute.</p>
+        <div class="cta">
+          <a class="btn primary" href="#catalogue">See what is in stock</a>
+          <a class="btn" href="#contact">Talk to us</a>
+        </div>
+      </div>
+      <aside class="shelf" aria-label="Stock summary">
+        <h2><span>On the shelf today</span><span id="asof"></span></h2>
+        <div class="big"><span id="totalUnits">0</span><small>units ready to ship</small></div>
+        <dl id="shelfRows"></dl>
+      </aside>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div class="wrap">
+      <ul>
+        <li>Prices in INR, excluding 18% GST</li>
+        <li>12-month warranty and service in India</li>
+        <li>Setup and staff training on site</li>
+        <li>Delivery from Mumbai warehouse</li>
+      </ul>
+    </div>
+  </div>
+
+  <section id="catalogue">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow">Live inventory</p>
+          <h2>Catalogue</h2>
+        </div>
+        <div class="seg" role="group" aria-label="View">
+          <button type="button" id="vCards" aria-pressed="true">Cards</button>
+          <button type="button" id="vTable" aria-pressed="false">Table</button>
+        </div>
+      </div>
+
+      <div class="tools">
+        <div class="seg" role="group" aria-label="Category" id="cats">
+          <button type="button" data-cat="all" aria-pressed="true">All</button>
+          <button type="button" data-cat="Restaurant" aria-pressed="false">Restaurant</button>
+          <button type="button" data-cat="Industrial" aria-pressed="false">Industrial</button>
+        </div>
+        <input class="field" id="search" type="search" placeholder="Search robots, e.g. serving, cobot" aria-label="Search robots">
+        <select class="field" id="sort" aria-label="Sort by">
+          <option value="feat">Featured</option>
+          <option value="plow">Price: low to high</option>
+          <option value="phigh">Price: high to low</option>
+          <option value="stock">Most stock</option>
+        </select>
+        <label class="chk"><input type="checkbox" id="instock"> In stock only</label>
+        <span class="count" id="count" aria-live="polite"></span>
+      </div>
+
+      <div id="out"></div>
+      <p class="note" style="margin-top:14px">Sample inventory and prices for this preview. Final prices are confirmed in your quote.</p>
+    </div>
+  </section>
+
+  <div class="band">
+    <section id="about">
+      <div class="wrap two">
+        <div class="about">
+          <p class="eyebrow">About Jagson</p>
+          <h2 style="font-size:clamp(28px,3.6vw,42px);font-stretch:118%;font-weight:800;margin-top:8px">Years of Indian floors behind every robot we sell.</h2>
+          <p>Jagson Robotics has spent years working for the Indian market, helping restaurants, hotels and factories save hours on jobs a machine can do. We have seen what a robot faces here: summer heat, uneven floors, power dips and packed dining rooms. We choose and set up every model with that in mind.</p>
+          <p>Each robot is tested in Mumbai, kept in stock in India and installed by our own engineers. Menus, languages and GST invoices are handled for you, and if something stops working, a Jagson engineer answers the phone.</p>
+          <div class="facts">
+            <div><b>8+ yrs</b><span>working in the Indian market</span></div>
+            <div><b>12</b><span>models in stock</span></div>
+            <div><b>12 mo</b><span>warranty on every unit</span></div>
+          </div>
+        </div>
+        <div class="contact" id="contact">
+          <h3>Visit or call</h3>
+          <dl style="margin:0;display:grid;gap:16px">
+            <div><dt>Headquarters</dt><dd>Jagson Robotics Pvt. Ltd.<br>Unit 14, Andheri-Kurla Road,<br>Andheri East, Mumbai 400059,<br>Maharashtra, India</dd></div>
+            <div><dt>Phone</dt><dd class="phone"><strong id="ph">+91 98765 43210</strong><button class="mini" type="button" id="copyPh">Copy</button><a class="mini" href="tel:+919876543210" style="text-decoration:none">Call</a></dd></div>
+            <div><dt>Email</dt><dd>sales@jagson.example</dd></div>
+            <div><dt>Showroom hours</dt><dd>Mon to Sat, 10:00 to 18:30 IST</dd></div>
+          </dl>
+          <p class="note">Placeholder address, phone and email. Replace them with your real details before launch.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section id="quote">
+    <div class="wrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow">Your enquiry</p>
+          <h2>Quote list</h2>
+        </div>
+      </div>
+      <div class="qgrid">
+        <div id="qbox"></div>
+        <form class="form" id="qform" novalidate>
+          <label>Your name<input class="field" id="qn" autocomplete="name" placeholder="Rahul Mehta"></label>
+          <label>Restaurant or company<input class="field" id="qc" autocomplete="organization" placeholder="Spice Route Kitchens"></label>
+          <label>Phone<input class="field" id="qp" type="tel" autocomplete="tel" placeholder="+91 "></label>
+          <button class="btn primary" type="submit" id="qs">Prepare my enquiry</button>
+          <div class="msg" id="qmsg" hidden></div>
+          <textarea class="field" id="qtext" readonly hidden aria-label="Enquiry text"></textarea>
+          <button class="btn" type="button" id="qcopy" hidden>Copy enquiry</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Jagson Robotics Pvt. Ltd. Mumbai, India.</span>
+    <span>All prices exclude GST. Sample content for preview.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var P=[
+    {id:"JG-SV-101",name:"ServeBot S1",cat:"Restaurant",g:"serve",price:345000,stock:14,desc:"Four-tray delivery robot that carries food from kitchen to table and returns on its own.",spec:["40 kg load","12 h battery","Lidar + camera"]},
+    {id:"JG-SV-102",name:"ServeBot S2 Plus",cat:"Restaurant",g:"serve",price:429000,stock:9,desc:"Larger five-tray model with a voice prompt and a birthday-song mode for busy dining halls.",spec:["60 kg load","14 h battery","Voice prompts"]},
+    {id:"JG-BB-110",name:"BusBot Clear",cat:"Restaurant",g:"serve",price:285000,stock:6,desc:"Collects used plates and glasses from tables and returns to the wash area.",spec:["50 kg load","10 h battery","Splash-proof"]},
+    {id:"JG-GR-120",name:"GreetBot Host",cat:"Restaurant",g:"serve",price:195000,stock:12,desc:"Reception robot with a 15.6 inch screen that greets guests and shows the menu in Hindi and English.",spec:["15.6 in display","8 h battery","2 languages"]},
+    {id:"JG-WK-130",name:"WokMaster Auto",cat:"Restaurant",g:"arm",price:480000,stock:3,desc:"Automatic stir-fry station that follows saved recipes and keeps portions the same every time.",spec:["60 recipes","3 kW induction","Auto oil"]},
+    {id:"JG-BR-140",name:"BaristaArm Cafe",cat:"Restaurant",g:"arm",price:795000,stock:0,desc:"Robot arm kiosk that takes the order, makes the coffee and hands it over. Next batch arriving.",spec:["120 cups/day","6-axis arm","App ordering"]},
+    {id:"JG-UV-150",name:"UV Shield Walker",cat:"Restaurant",g:"agv",price:225000,stock:11,desc:"Disinfection robot for dining rooms and kitchens after closing hours.",spec:["UV-C lamp","2 h per cycle","Motion cut-off"]},
+    {id:"JG-AM-201",name:"HaulMate 300",cat:"Industrial",g:"agv",price:690000,stock:5,desc:"Autonomous mobile robot that moves bins and trolleys between workstations without floor markings.",spec:["300 kg load","8 h battery","SLAM nav"]},
+    {id:"JG-AG-202",name:"LiftMax 1000",cat:"Industrial",g:"agv",price:1150000,stock:2,desc:"Heavy pallet-lifting AGV for warehouses and assembly lines.",spec:["1000 kg load","Lift 1.6 m","Fork type"]},
+    {id:"JG-CB-210",name:"Cobot C6",cat:"Industrial",g:"arm",price:595000,stock:7,desc:"Six-axis collaborative arm for pick and place, packing and machine tending.",spec:["6 kg payload","850 mm reach","±0.03 mm"]},
+    {id:"JG-WD-220",name:"WeldPro Cobot",cat:"Industrial",g:"arm",price:875000,stock:3,desc:"Collaborative welding arm with a teach-by-hand pendant, made for small fabrication shops.",spec:["MIG/TIG ready","10 kg payload","Hand teach"]},
+    {id:"JG-SW-230",name:"SweepIQ Floor 90",cat:"Industrial",g:"agv",price:420000,stock:8,desc:"Autonomous scrubber for factory floors, covering about 4,000 sq m per charge.",spec:["4,000 sq m","90 L tank","Auto dock"]}
+  ];
+  var MAXSTOCK=15, GST=0.18;
+  var state={cat:"all",q:"",sort:"feat",inOnly:false,view:"cards"};
+  var quote={};
+  function $(id){return document.getElementById(id)}
+  function inr(n){return "₹"+Math.round(n).toLocaleString("en-IN")}
+  function find(id){for(var i=0;i<P.length;i++)if(P[i].id===id)return P[i]}
+  function status(s){return s===0?{c:"out",t:"Out of stock"}:s<=3?{c:"low",t:"Low stock"}:{c:"ok",t:"In stock"}}
+
+  /* hero summary */
+  (function(){
+    var tot=0,rows={Restaurant:{u:0,m:0},Industrial:{u:0,m:0}};
+    P.forEach(function(p){tot+=p.stock;rows[p.cat].u+=p.stock;rows[p.cat].m++});
+    $("totalUnits").textContent=tot;
+    $("asof").textContent=new Date().toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+    var h="";
+    Object.keys(rows).forEach(function(k){
+      h+='<div><span>'+k+' ('+rows[k].m+' models)</span><dd>'+rows[k].u+' units</dd><span class="meter"><span style="width:'+Math.round(rows[k].u/tot*100)+'%"></span></span></div>';
+    });
+    $("shelfRows").innerHTML=h;
+  })();
+
+  function list(){
+    var q=state.q.trim().toLowerCase();
+    var r=P.filter(function(p){
+      if(state.cat!=="all"&&p.cat!==state.cat)return false;
+      if(state.inOnly&&p.stock===0)return false;
+      if(q&&(p.name+" "+p.desc+" "+p.id+" "+p.spec.join(" ")).toLowerCase().indexOf(q)<0)return false;
+      return true;
+    });
+    if(state.sort==="plow")r.sort(function(a,b){return a.price-b.price});
+    if(state.sort==="phigh")r.sort(function(a,b){return b.price-a.price});
+    if(state.sort==="stock")r.sort(function(a,b){return b.stock-a.stock});
+    return r;
+  }
+  function btnLabel(p){
+    var n=quote[p.id]||0;
+    if(n)return "In quote ("+n+")";
+    return p.stock===0?"Ask for ETA":"Add to quote";
+  }
+  function render(){
+    var r=list();
+    $("count").textContent=r.length+" of "+P.length+" models";
+    if(!r.length){$("out").innerHTML='<div class="empty">No robots match these filters. Clear the search or choose All.</div>';return}
+    var h="";
+    if(state.view==="cards"){
+      h='<div class="grid">';
+      r.forEach(function(p){
+        var s=status(p.stock),pct=Math.round(Math.min(p.stock,MAXSTOCK)/MAXSTOCK*100);
+        h+='<article class="card"><div class="pic"><span class="tag">'+p.cat+'</span><svg aria-hidden="true"><use href="#g-'+p.g+'"/></svg></div>'
+         +'<div class="cbody"><div><h3>'+p.name+'</h3><span class="sku">'+p.id+'</span></div>'
+         +'<p class="desc">'+p.desc+'</p>'
+         +'<ul class="specs">'+p.spec.map(function(x){return "<li>"+x+"</li>"}).join("")+'</ul>'
+         +'<div class="price">'+inr(p.price)+'<small>+ GST</small></div>'
+         +'<div class="stock '+s.c+'"><div class="row"><span class="pill">'+s.t+'</span><span class="units">'+(p.stock?p.stock+" left":"0 left")+'</span></div><div class="bar2"><span style="width:'+pct+'%"></span></div></div>'
+         +'<button type="button" class="add'+(quote[p.id]?" in":"")+'" data-add="'+p.id+'">'+btnLabel(p)+'</button></div></article>';
+      });
+      h+='</div>';
+    }else{
+      h='<div class="tablebox"><table><thead><tr><th>Model</th><th>SKU</th><th>Segment</th><th class="num">Price (ex-GST)</th><th class="num">Stock</th><th>Status</th><th></th></tr></thead><tbody>';
+      r.forEach(function(p){
+        var s=status(p.stock);
+        h+='<tr><td><b>'+p.name+'</b></td><td class="num" style="text-align:left">'+p.id+'</td><td>'+p.cat+'</td><td class="num">'+inr(p.price)+'</td><td class="num">'+p.stock+'</td><td><span class="pill '+s.c+'">'+s.t+'</span></td><td><button type="button" class="add'+(quote[p.id]?" in":"")+'" data-add="'+p.id+'">'+btnLabel(p)+'</button></td></tr>';
+      });
+      h+='</tbody></table></div>';
+    }
+    $("out").innerHTML=h;
+  }
+
+  function renderQuote(){
+    var ids=Object.keys(quote),n=0,sub=0;
+    ids.forEach(function(id){n+=quote[id];sub+=find(id).price*quote[id]});
+    $("qcount").textContent=n;
+    var h="";
+    if(!ids.length){
+      h='<div class="empty">Your quote list is empty. Add robots from the catalogue and the total appears here.</div>';
+    }else{
+      h='<div class="qlist">';
+      ids.forEach(function(id){
+        var p=find(id),q=quote[id],s=status(p.stock);
+        h+='<div class="qitem"><div><b>'+p.name+'</b><div class="sku">'+p.id+(p.stock===0?" · ETA to be confirmed":"")+'</div></div>'
+         +'<div class="qty"><button type="button" data-dec="'+id+'" aria-label="Remove one '+p.name+'">−</button><span>'+q+'</span><button type="button" data-inc="'+id+'" aria-label="Add one '+p.name+'">+</button></div>'
+         +'<div class="qprice">'+inr(p.price*q)+'</div></div>';
+      });
+      h+='<div class="totals"><div><span>Subtotal</span><span>'+inr(sub)+'</span></div><div><span>GST 18%</span><span>'+inr(sub*GST)+'</span></div><div class="grand"><span>Total</span><span>'+inr(sub*(1+GST))+'</span></div></div></div>';
+    }
+    $("qbox").innerHTML=h;
+    $("qs").disabled=!ids.length;
+  }
+  function summary(){
+    var ids=Object.keys(quote),sub=0,l=["Enquiry for Jagson Robotics",""];
+    ids.forEach(function(id){var p=find(id);sub+=p.price*quote[id];l.push(quote[id]+" x "+p.name+" ("+p.id+") - "+inr(p.price*quote[id]))});
+    l.push("","Subtotal: "+inr(sub),"GST 18%: "+inr(sub*GST),"Total: "+inr(sub*(1+GST)),"");
+    l.push("Name: "+($("qn").value||"-"),"Company: "+($("qc").value||"-"),"Phone: "+($("qp").value||"-"));
+    return l.join("\n");
+  }
+
+  function copy(text,done){
+    function fb(){done(false)}
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){done(true)},fb)}else fb();
+    }catch(e){fb()}
+  }
+
+  document.addEventListener("click",function(e){
+    var t=e.target.closest("button");if(!t)return;
+    if(t.dataset.add){quote[t.dataset.add]=(quote[t.dataset.add]||0)+(quote[t.dataset.add]?0:1);render();renderQuote()}
+    if(t.dataset.inc){quote[t.dataset.inc]++;render();renderQuote()}
+    if(t.dataset.dec){quote[t.dataset.dec]--;if(quote[t.dataset.dec]<=0)delete quote[t.dataset.dec];render();renderQuote()}
+    if(t.dataset.cat){state.cat=t.dataset.cat;Array.prototype.forEach.call($("cats").children,function(b){b.setAttribute("aria-pressed",b===t)});render()}
+  });
+  $("vCards").onclick=function(){state.view="cards";$("vCards").setAttribute("aria-pressed","true");$("vTable").setAttribute("aria-pressed","false");render()};
+  $("vTable").onclick=function(){state.view="table";$("vTable").setAttribute("aria-pressed","true");$("vCards").setAttribute("aria-pressed","false");render()};
+  $("search").oninput=function(){state.q=this.value;render()};
+  $("sort").onchange=function(){state.sort=this.value;render()};
+  $("instock").onchange=function(){state.inOnly=this.checked;render()};
+  $("copyPh").onclick=function(){
+    var b=this;copy($("ph").textContent,function(ok){b.textContent=ok?"Copied":"Select it";if(!ok){var r=document.createRange();r.selectNodeContents($("ph"));var s=getSelection();s.removeAllRanges();s.addRange(r)}setTimeout(function(){b.textContent="Copy"},1800)});
+  };
+  $("qform").addEventListener("submit",function(e){
+    e.preventDefault();
+    var t=summary();$("qtext").value=t;$("qtext").hidden=false;$("qcopy").hidden=false;
+    $("qmsg").hidden=false;
+    $("qmsg").textContent="Your enquiry is ready below. This preview page does not send it anywhere, so copy it and send it to our phone or email.";
+  });
+  $("qcopy").onclick=function(){
+    var b=this;copy($("qtext").value,function(ok){if(!ok){$("qtext").focus();$("qtext").select()}b.textContent=ok?"Copied":"Press Ctrl+C to copy";setTimeout(function(){b.textContent="Copy enquiry"},2000)});
+  };
+
+  render();renderQuote();
+})();
+</script>
+
+</body></html>
